@@ -48,6 +48,11 @@ export function App() {
     [policies]
   );
 
+  const documentDigits = onlyDigits(form.insuredDocument);
+  const normalizedPlate = normalizePlate(form.vehiclePlate);
+  const isDocumentValid = documentDigits.length === 11 || documentDigits.length === 14;
+  const isPlateValid = normalizedPlate.length === 7;
+
   async function loadPolicies(expiringOnly = showExpiringOnly) {
     setLoading(true);
     setError(null);
@@ -73,11 +78,28 @@ export function App() {
     setSaving(true);
     setError(null);
 
+    if (!isDocumentValid) {
+      setSaving(false);
+      setError("Informe um CPF com 11 digitos ou CNPJ com 14 digitos.");
+      return;
+    }
+
+    if (!isPlateValid) {
+      setSaving(false);
+      setError("Informe uma placa com 7 caracteres alfanumericos.");
+      return;
+    }
+
     try {
+      const payload = {
+        ...form,
+        vehiclePlate: normalizedPlate
+      };
+
       if (editingPolicy) {
-        await policiesApi.update(editingPolicy.id, form);
+        await policiesApi.update(editingPolicy.id, payload);
       } else {
-        await policiesApi.create(form);
+        await policiesApi.create(payload);
       }
 
       setForm(initialForm);
@@ -93,8 +115,8 @@ export function App() {
   function startEditing(policy: Policy) {
     setEditingPolicy(policy);
     setForm({
-      insuredDocument: policy.insuredDocument,
-      vehiclePlate: policy.vehiclePlate,
+      insuredDocument: formatDocument(policy.insuredDocument),
+      vehiclePlate: normalizePlate(policy.vehiclePlate),
       monthlyPremium: policy.monthlyPremium,
       startDate: policy.startDate,
       endDate: policy.endDate,
@@ -185,11 +207,20 @@ export function App() {
               <input
                 value={form.insuredDocument}
                 onChange={(event) =>
-                  setForm((current) => ({ ...current, insuredDocument: event.target.value }))
+                  setForm((current) => ({
+                    ...current,
+                    insuredDocument: formatDocument(event.target.value)
+                  }))
                 }
                 placeholder="123.456.789-01"
+                inputMode="numeric"
+                maxLength={18}
+                aria-invalid={form.insuredDocument.length > 0 && !isDocumentValid}
                 required
               />
+              {form.insuredDocument.length > 0 && !isDocumentValid && (
+                <span className="field-hint">Use 11 digitos para CPF ou 14 para CNPJ.</span>
+              )}
             </label>
 
             <label>
@@ -197,11 +228,19 @@ export function App() {
               <input
                 value={form.vehiclePlate}
                 onChange={(event) =>
-                  setForm((current) => ({ ...current, vehiclePlate: event.target.value }))
+                  setForm((current) => ({
+                    ...current,
+                    vehiclePlate: normalizePlate(event.target.value)
+                  }))
                 }
                 placeholder="ABC1D23"
+                maxLength={7}
+                aria-invalid={form.vehiclePlate.length > 0 && !isPlateValid}
                 required
               />
+              {form.vehiclePlate.length > 0 && !isPlateValid && (
+                <span className="field-hint">A placa deve ter exatamente 7 caracteres.</span>
+              )}
             </label>
 
             <label>
@@ -372,4 +411,31 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone: "UTC"
   }).format(new Date(`${value}T00:00:00Z`));
+}
+
+function onlyDigits(value: string) {
+  return value.replace(/\D/g, "").slice(0, 14);
+}
+
+function formatDocument(value: string) {
+  const digits = onlyDigits(value);
+
+  if (digits.length <= 11) {
+    return digits
+      .replace(/^(\d{3})(\d)/, "$1.$2")
+      .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+      .replace(/^(\d{3})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3-$4")
+      .slice(0, 14);
+  }
+
+  return digits
+    .replace(/^(\d{2})(\d)/, "$1.$2")
+    .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/^(\d{2})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3/$4")
+    .replace(/^(\d{2})\.(\d{3})\.(\d{3})\/(\d{4})(\d)/, "$1.$2.$3/$4-$5")
+    .slice(0, 18);
+}
+
+function normalizePlate(value: string) {
+  return value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 7);
 }

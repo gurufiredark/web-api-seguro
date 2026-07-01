@@ -205,6 +205,17 @@ h2 {
   box-shadow: 0 0 0 3px rgba(20, 125, 100, 0.14);
 }
 
+.policy-form input[aria-invalid="true"] {
+  border-color: #c4493b;
+}
+
+.field-hint {
+  color: #8b2d22;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
 .date-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
