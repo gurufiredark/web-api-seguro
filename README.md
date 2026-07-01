@@ -33,6 +33,9 @@ http://localhost:5259/swagger
 
 O banco SQLite será criado automaticamente no arquivo `policies.db` na primeira execução.
 
+O banco inicia vazio. Para popular os dados, use o Swagger, o front-end ou envie uma requisicao
+`POST /api/policies` com o payload de exemplo deste README.
+
 ## Como executar o front-end
 
 Em outro terminal, instale as dependencias do app React:
