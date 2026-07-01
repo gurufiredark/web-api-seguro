@@ -52,6 +52,7 @@ export function App() {
   const normalizedPlate = normalizePlate(form.vehiclePlate);
   const isDocumentValid = documentDigits.length === 11 || documentDigits.length === 14;
   const isPlateValid = normalizedPlate.length === 7;
+  const isDateRangeValid = !form.startDate || !form.endDate || form.endDate >= form.startDate;
 
   async function loadPolicies(expiringOnly = showExpiringOnly) {
     setLoading(true);
@@ -87,6 +88,12 @@ export function App() {
     if (!isPlateValid) {
       setSaving(false);
       setError("Informe uma placa com 7 caracteres alfanumericos.");
+      return;
+    }
+
+    if (!isDateRangeValid) {
+      setSaving(false);
+      setError("A data de termino deve ser maior ou igual a data de inicio.");
       return;
     }
 
@@ -278,11 +285,18 @@ export function App() {
                 <input
                   type="date"
                   value={form.endDate}
+                  min={form.startDate || undefined}
                   onChange={(event) =>
                     setForm((current) => ({ ...current, endDate: event.target.value }))
                   }
+                  aria-invalid={!isDateRangeValid}
                   required
                 />
+                {!isDateRangeValid && (
+                  <span className="field-hint">
+                    A data de termino deve ser maior ou igual a data de inicio.
+                  </span>
+                )}
               </label>
             </div>
 
