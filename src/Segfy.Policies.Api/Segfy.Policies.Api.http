@@ -1,0 +1,23 @@
+@Segfy.Policies.Api_HostAddress = http://localhost:5259
+
+POST {{Segfy.Policies.Api_HostAddress}}/api/policies
+Content-Type: application/json
+
+{
+  "insuredDocument": "12345678901",
+  "vehiclePlate": "ABC1D23",
+  "monthlyPremium": 199.90,
+  "startDate": "2026-07-01",
+  "endDate": "2027-07-01",
+  "status": "Ativa"
+}
+
+###
+
+GET {{Segfy.Policies.Api_HostAddress}}/api/policies
+Accept: application/json
+
+###
+
+GET {{Segfy.Policies.Api_HostAddress}}/api/policies/expiring-soon
+Accept: application/json

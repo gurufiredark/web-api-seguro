@@ -1,0 +1,13 @@
+bin/
+obj/
+node_modules/
+dist/
+*.tsbuildinfo
+frontend/Segfy.Policies.Web/vite.config.js
+frontend/Segfy.Policies.Web/vite.config.d.ts
+*.db
+*.db-shm
+*.db-wal
+.vs/
+.idea/
+.vscode/
